@@ -1,4 +1,5 @@
 ---
+# Implement ansibleuser
 - name: Implement ansibleuser
   hosts: all
   become: yes
@@ -33,6 +34,7 @@
       state: present
       validate: "/usr/sbin/visudo -cf %s"
 
+# Install Apache
 - name: Install Apache
   hosts: web
   become: yes
@@ -56,3 +58,40 @@
     
   - name: "Start Apache"
     command: sudo systemctl start httpd
+
+# Install NodeJs
+- name: Install NodeJs
+  hosts: app
+  become: yes
+
+  tasks:
+  - name: "Install NodeJs Step 1."
+    shell: curl -sL https://rpm.nodesource.com/setup_10.x | sudo -E bash -
+    
+  - name: "Install NodeJs Step 2."
+    yum:
+      name:
+        - gcc-c++
+        - make
+        - nodejs
+        - git
+      state: latest
+
+  - name: Install required npm package(s)
+    npm:
+      name: supervisor
+      global: yes
+
+  - name: Implement nodejs code from git
+    git:
+      repo: https://github.com/ch-e-mistry/DevOps_Training.git
+      dest: /nodejs/
+      force: yes
+
+  - name: Copy prepared unit file
+    copy:
+      src: ./nodejsapp.service
+      dest: /usr/lib/systemd/system/nodejsapp.service
+      owner: root
+      group: root
+      mode: '0644'
