@@ -36,3 +36,23 @@
 - name: Install Apache
   hosts: web
   become: yes
+
+  tasks:
+  - name: "Installing Apache"
+    yum:
+      name: httpd
+      state: latest
+
+  - name: "Set firewall" 
+    firewalld:
+        port: 80/tcp
+        permanent: yes
+        state: enabled
+
+  - name: "reload service firewalld, in all cases"
+    systemd:
+      name: firewalld
+      state: reloaded
+    
+  - name: "Start Apache"
+    command: sudo systemctl start httpd
